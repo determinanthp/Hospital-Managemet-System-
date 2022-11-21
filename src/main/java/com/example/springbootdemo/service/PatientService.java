@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 public interface PatientService {
+
     public PatientResponse createPatient(PatientRequest request);
 
     public PatientResponse updatePatient(PatientRequest request, Long id);
@@ -20,4 +21,6 @@ public interface PatientService {
     List<PatientResponse> findAllPatient();
 
     List <Patient> listPatient();
+
+    List<Patient> downloadPatientDetails(Long id);
 }

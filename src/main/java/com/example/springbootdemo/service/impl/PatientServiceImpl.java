@@ -1,6 +1,7 @@
 package com.example.springbootdemo.service.impl;
 
 import com.example.springbootdemo.entity.Patient;
+import com.example.springbootdemo.exceptions.CustomException;
 import com.example.springbootdemo.model.PatientRequest;
 import com.example.springbootdemo.model.PatientResponse;
 import com.example.springbootdemo.repository.PatientRepository;
@@ -8,8 +9,10 @@ import com.example.springbootdemo.service.PatientService;
 import com.example.springbootdemo.utils.AppUtils;
 import com.example.springbootdemo.utils.MapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -48,11 +51,9 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public boolean deleteById(Long id) {
-        patientRepository.findById(id).map(patient -> {
-            patientRepository.delete(patient);
-            return true;
-        });
-        return false;
+        Patient patient = patientRepository.findById(id).orElseThrow(() -> new CustomException("Patient not found", HttpStatus.NOT_FOUND));
+        patientRepository.delete(patient);
+        return true;
     }
 
     @Override
@@ -77,5 +78,11 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public List<Patient> listPatient() {
         return null;
+    }
+
+    @Override
+    public List<Patient> downloadPatientDetails(Long id) {
+        Patient patient = patientRepository.findById(id).orElse(null);
+        return Collections.singletonList(patient);
     }
 }

@@ -24,7 +24,7 @@ public class Staff {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "uuid", length = 20)
+    @Column(name = "uuid", length = 50)
     private String uuid;
 
     @Column(name = "registration_date")

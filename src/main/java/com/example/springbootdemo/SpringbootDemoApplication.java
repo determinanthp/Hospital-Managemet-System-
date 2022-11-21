@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @SpringBootApplication
@@ -52,10 +54,15 @@ class CustomInstaller implements CommandLineRunner {
         if (count > 0) {
             return;
         }
-        staffRepository.save(Staff.builder()
-                .name("Smith")
-                .uuid(UUID.randomUUID().toString())
-                .registrationDate(new Timestamp(System.currentTimeMillis()))
-                .build());
+
+        List<String> names = List.of("Paul", "Mike", "Smith", "John", "Cole");
+
+        for (int i = 0; i < names.size(); i++) {
+            staffRepository.save(Staff.builder()
+                    .name(names.get(i))
+                    .uuid(UUID.randomUUID().toString())
+                    .registrationDate(new Timestamp(System.currentTimeMillis()))
+                    .build());
+        }
     }
 }

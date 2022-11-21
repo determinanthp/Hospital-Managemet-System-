@@ -5,7 +5,6 @@ import com.example.springbootdemo.exceptions.CustomException;
 import com.example.springbootdemo.model.StaffRequest;
 import com.example.springbootdemo.model.StaffResponse;
 import com.example.springbootdemo.service.StaffService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +17,17 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("/api/staff")
 public class StaffController {
 
-    @Autowired
-    private StaffService staffService;
-    @Autowired
-    private ValidateStaffService validateStaffService;
+    private final StaffService staffService;
+    private final ValidateStaffService validateStaffService;
+
+    public StaffController(StaffService staffService, ValidateStaffService validateStaffService) {
+        this.staffService = staffService;
+        this.validateStaffService = validateStaffService;
+    }
 
     @PostMapping
-    public ResponseEntity<StaffResponse> saveUser(@RequestHeader(value = "Authorization", required = false) String header, @RequestBody StaffRequest staff) {
+    public ResponseEntity<StaffResponse> saveUser(@RequestHeader(value = "Authorization", required = false) String header,
+                                                  @RequestBody StaffRequest staff) {
         // call validate method here first
         Boolean validateStaff = validateStaffService.validateStaff(header);
         if (validateStaff) {
@@ -39,7 +42,7 @@ public class StaffController {
                                       @RequestBody StaffRequest staff,
                                       @PathVariable Long id) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
-        if (validateStaff){
+        if (validateStaff) {
             return new ResponseEntity<>(staffService.updateStaff(staff, id), HttpStatus.OK);
         } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
@@ -47,11 +50,12 @@ public class StaffController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<StaffResponse> findStaffById(@RequestHeader(value = "Authorization", required = false) String header, @PathVariable("id") long staffId) {
+    public ResponseEntity<StaffResponse> findStaffById(@RequestHeader(value = "Authorization", required = false) String header,
+                                                       @PathVariable("id") long staffId) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
-        if (validateStaff){
+        if (validateStaff) {
             return new ResponseEntity<>(staffService.findById(staffId), OK);
-        }else{
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
@@ -59,9 +63,9 @@ public class StaffController {
     @GetMapping
     public ResponseEntity<List<StaffResponse>> findAllStaff(@RequestHeader(value = "Authorization", required = false) String header) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
-        if (validateStaff){
+        if (validateStaff) {
             return new ResponseEntity<>(staffService.findAllStaff(), OK);
-        }else {
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
@@ -71,7 +75,7 @@ public class StaffController {
         Boolean validateStaff = validateStaffService.validateStaff(header);
         if (validateStaff) {
             return new ResponseEntity<>(staffService.deleteById(id), OK);
-        }else {
+        } else {
             throw new CustomException("invalid user", UNAUTHORIZED);
         }
     }

@@ -12,5 +12,4 @@ public class PatientRequest {
 
     private String name;
     private Integer age;
-    private Integer phoneNo;
 }

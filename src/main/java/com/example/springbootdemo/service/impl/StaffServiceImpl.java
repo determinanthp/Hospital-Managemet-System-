@@ -1,12 +1,14 @@
 package com.example.springbootdemo.service.impl;
 
 import com.example.springbootdemo.entity.Staff;
+import com.example.springbootdemo.exceptions.CustomException;
 import com.example.springbootdemo.model.StaffRequest;
 import com.example.springbootdemo.model.StaffResponse;
 import com.example.springbootdemo.repository.StaffRepository;
 import com.example.springbootdemo.service.StaffService;
 import com.example.springbootdemo.utils.MapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,11 +53,9 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public boolean deleteById(Long id) {
-        staffRepository.findById(id).map(staff -> {
-            staffRepository.deleteById(id);
-            return true;
-        });
-        return false;
+        staffRepository.findById(id).orElseThrow(() -> new CustomException("User cannot be found", HttpStatus.NOT_FOUND));
+        staffRepository.deleteById(id);
+        return true;
     }
 
     @Override

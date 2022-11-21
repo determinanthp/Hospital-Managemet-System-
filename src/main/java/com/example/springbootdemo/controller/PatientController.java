@@ -1,24 +1,18 @@
 package com.example.springbootdemo.controller;
 
 import com.example.springbootdemo.ValidateStaffService;
-import com.example.springbootdemo.entity.Patient;
 import com.example.springbootdemo.exceptions.CustomException;
 import com.example.springbootdemo.model.PatientRequest;
 import com.example.springbootdemo.model.PatientResponse;
 import com.example.springbootdemo.service.PatientService;
-import com.opencsv.CSVWriter;
-import com.opencsv.bean.StatefulBeanToCsv;
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
-import org.springframework.http.HttpHeaders;
+import com.example.springbootdemo.utils.ExportUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Timestamp;
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RestController
@@ -32,78 +26,65 @@ public class PatientController {
         this.patientService = patientService;
         this.validateStaffService = validateStaffService;
     }
-    @GetMapping("/export-patient")
-    public void exportCSV(HttpServletResponse response) throws Exception {
 
-        //set file name and content type
-        String filename = "users.csv";
-
-        response.setContentType("text/csv");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + filename + "\"");
-
-        //create a csv writer
-        StatefulBeanToCsv<Patient> writer = new StatefulBeanToCsvBuilder<Patient>(response.getWriter())
-                .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
-                .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
-                .withOrderedResults(false)
-                .build();
-
-        //write all users to csv file
-        writer.write(patientService.listPatient());
-
+    @GetMapping("/export-patient/{id}")
+    public void exportCSV(@PathVariable("id") Long id, HttpServletResponse response) {
+        ExportUtils.exportCSV(response, patientService.downloadPatientDetails(id), "patient");
     }
 
     @PostMapping
-    public ResponseEntity<PatientResponse> saveUser(@RequestHeader(value = "Authorization", required = false) String header, @RequestBody PatientRequest patient) {
+    public ResponseEntity<PatientResponse> saveUser(@RequestHeader(value = "Authorization", required = false) String header,
+                                                    @RequestBody PatientRequest patient) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
         if (validateStaff) {
-        return new ResponseEntity<>(patientService.createPatient(patient), HttpStatus.CREATED);
-    }else {
+            return new ResponseEntity<>(patientService.createPatient(patient), HttpStatus.CREATED);
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<PatientResponse> updatePatient(@RequestHeader (value = "Authorization", required = false) String header,
+    public ResponseEntity<PatientResponse> updatePatient(@RequestHeader(value = "Authorization", required = false) String header,
                                                          @PathVariable("id") long id,
                                                          @RequestBody PatientRequest request) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
-        if (validateStaff){
-            return  new ResponseEntity<>(patientService.updatePatient(request, id), HttpStatus.OK);
-        }else {
+        if (validateStaff) {
+            return new ResponseEntity<>(patientService.updatePatient(request, id), HttpStatus.OK);
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
 
-
     @DeleteMapping("{id}")
-    public ResponseEntity<Boolean> deleteById(@RequestHeader (value = "Authorization", required = false) String header, @PathVariable("id") long patientId) {
+    public ResponseEntity<Boolean> deleteById(@RequestHeader(value = "Authorization", required = false) String header,
+                                              @PathVariable("id") long patientId) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
         if (validateStaff) {
-            return new ResponseEntity<Boolean>(patientService.deleteById(patientId), HttpStatus.OK);
-        }else {
+            return new ResponseEntity<>(patientService.deleteById(patientId), HttpStatus.OK);
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<PatientResponse>> findAllStaff(@RequestHeader (value = "Authorization", required = false) String header,@PathVariable long id) {
+    public ResponseEntity<List<PatientResponse>> findAllStaff(@RequestHeader(value = "Authorization", required = false) String header) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
-        if (validateStaff){
-        return new ResponseEntity<List<PatientResponse>>(patientService.findAllPatient(), HttpStatus.OK);
-        }else {
+        if (validateStaff) {
+            return new ResponseEntity<>(patientService.findAllPatient(), HttpStatus.OK);
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
 
 
-    @DeleteMapping("{date}")
-    public ResponseEntity<Boolean> deleteByLastVisitedDateBetween(@RequestHeader (value = "Authorization", required = false) String header, @PathVariable("date") Timestamp date) {
+    @DeleteMapping
+    public ResponseEntity<Boolean> deleteByLastVisitedDateBetween(@RequestHeader(value = "Authorization", required = false) String header,
+                                                                  @RequestParam String startDate,
+                                                                  @RequestParam String endDate) {
         Boolean validateStaff = validateStaffService.validateStaff(header);
-        if (validateStaff){
-        return new ResponseEntity<Boolean>(patientService.deleteByLastVisitedDateBetween("startDate", "endDate"), HttpStatus.OK);
-    }else {
+        if (validateStaff) {
+            return new ResponseEntity<>(patientService.deleteByLastVisitedDateBetween(startDate, endDate), HttpStatus.OK);
+        } else {
             throw new CustomException("Invalid user", UNAUTHORIZED);
         }
     }
